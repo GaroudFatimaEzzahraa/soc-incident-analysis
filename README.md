@@ -3,12 +3,10 @@
 ## Overview
 This project implements an intelligent Security Operations Center (SOC) pipeline designed to detect, correlate, reconstruct, and analyze security incidents using Artificial Intelligence.
 
----
 
 ## Architecture
 Wazuh → Kafka → Preprocessing → Correlation → Reconstruction → LLM → API
 
----
 
 ## Features
 
@@ -30,8 +28,6 @@ Wazuh → Kafka → Preprocessing → Correlation → Reconstruction → LLM →
 ### Backend
 - FastAPI for exposing incident data
 
----
-
 ## Project Structure
 
 - `wazuh_to_kafka.py` → Stream alerts from Wazuh  
@@ -42,7 +38,6 @@ Wazuh → Kafka → Preprocessing → Correlation → Reconstruction → LLM →
 - `api.py` → Backend API  
 - `final_report.json` → Final enriched incidents  
 
----
 
 ## Example Output
 
@@ -54,14 +49,12 @@ Each incident contains:
 - AI-generated analysis  
 - Security recommendations  
 
----
 
 ## Objective
 - Reduce alert fatigue in SOC environments  
 - Automate incident understanding  
 - Improve response time using AI  
 
----
 
 ## Current Status
 - Preprocessing completed  
