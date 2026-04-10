@@ -1,0 +1,229 @@
+[
+  {
+    "incident_id": "EA3C7E98",
+    "status": "OPEN",
+    "severity": "CRITICAL",
+    "rule_triggered": "SSH_BRUTE_FORCE",
+    "attack_type": "Brute Force SSH",
+    "description": "Une attaque par force brute SSH a été détectée sur la machine cible. L'attaquant a effectué plusieurs tentatives d'authentification échouées dans un intervalle très court, ce qui suggère l'utilisation d'un outil automatisé.",
+    "summary": {
+      "attacker_ip": "192.168.93.163",
+      "target_agent": "victime-VMware-Virtual-Platform",
+      "target_user": null,
+      "time_start": "2026-04-01 14:21:26 UTC",
+      "time_end": "2026-04-01 14:21:32 UTC",
+      "duration_seconds": 6,
+      "alert_count": 11
+    },
+    "mitre": {
+      "tactics_chain": [
+        "Credential Access"
+      ],
+      "techniques": [
+        "T1110.001",
+        "T1110"
+      ]
+    },
+    "statistics": {
+      "total_alerts": 11,
+      "duration_seconds": 6,
+      "unique_src_ips": [
+        "192.168.93.163"
+      ],
+      "unique_users": [],
+      "unique_techniques_count": 2,
+      "event_counts": {
+        "ssh_failed": 11
+      },
+      "max_rule_level": 10
+    },
+    "attack_progression": [
+      "Tentatives répétées d'authentification SSH"
+    ],
+    "attack_narrative": "Un incident de type 'Brute Force SSH' a été détecté avec un niveau de sévérité CRITICAL. La source suspecte 192.168.93.163 a ciblé la machine 'victime-VMware-Virtual-Platform' entre 2026-04-01 14:21:26 UTC et 2026-04-01 14:21:32 UTC, sur une durée estimée à 6 seconde(s). L'incident regroupe 11 alerte(s) corrélée(s). La progression observée est la suivante : Tentatives répétées d'authentification SSH. La chaîne MITRE ATT&CK identifiée est : Credential Access. Les techniques associées sont : T1110.001, T1110.",
+    "recommendations": [
+      "Vérifier puis bloquer l'adresse IP source suspecte : 192.168.93.163.",
+      "Vérifier les journaux SSH et rechercher d'autres tentatives similaires.",
+      "Contrôler la robustesse des mots de passe et envisager une rotation des identifiants exposés.",
+      "Activer ou renforcer les mécanismes anti-brute-force et limiter les tentatives SSH."
+    ],
+    "timeline": [
+      {
+        "step": 1,
+        "timestamp": "2026-04-01 14:21:26 UTC",
+        "raw_timestamp": "2026-04-01T14:21:26.466000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 2,
+        "timestamp": "2026-04-01 14:21:26 UTC",
+        "raw_timestamp": "2026-04-01T14:21:26.484000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 3,
+        "timestamp": "2026-04-01 14:21:26 UTC",
+        "raw_timestamp": "2026-04-01T14:21:26.485000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 4,
+        "timestamp": "2026-04-01 14:21:26 UTC",
+        "raw_timestamp": "2026-04-01T14:21:26.485000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 5,
+        "timestamp": "2026-04-01 14:21:26 UTC",
+        "raw_timestamp": "2026-04-01T14:21:26.487000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 6,
+        "timestamp": "2026-04-01 14:21:26 UTC",
+        "raw_timestamp": "2026-04-01T14:21:26.529000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 7,
+        "timestamp": "2026-04-01 14:21:28 UTC",
+        "raw_timestamp": "2026-04-01T14:21:28.469000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 8,
+        "timestamp": "2026-04-01 14:21:28 UTC",
+        "raw_timestamp": "2026-04-01T14:21:28.469000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 9,
+        "timestamp": "2026-04-01 14:21:28 UTC",
+        "raw_timestamp": "2026-04-01T14:21:28.472000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5712",
+        "rule_level": 10,
+        "rule_description": "sshd: brute force trying to get access to the system. Non existent user.",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110",
+        "mitre_technique_name": "Brute Force"
+      },
+      {
+        "step": 10,
+        "timestamp": "2026-04-01 14:21:28 UTC",
+        "raw_timestamp": "2026-04-01T14:21:28.474000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      },
+      {
+        "step": 11,
+        "timestamp": "2026-04-01 14:21:32 UTC",
+        "raw_timestamp": "2026-04-01T14:21:32.472000+00:00",
+        "event_type": "ssh_failed",
+        "event_label": "Tentative de connexion SSH échouée",
+        "rule_id": "5710",
+        "rule_level": 5,
+        "rule_description": "sshd: Attempt to login using a non-existent user",
+        "src_ip": "192.168.93.163",
+        "dst_user": null,
+        "agent_name": "victime-VMware-Virtual-Platform",
+        "mitre_tactic": "Credential Access",
+        "mitre_technique": "T1110.001",
+        "mitre_technique_name": "Password Guessing"
+      }
+    ]
+  }
+]

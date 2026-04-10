@@ -1,13 +1,55 @@
+# preprocessing.py
+# Rôle : transformer une alerte Wazuh brute (JSON complexe)
+# en un dictionnaire simple et normalisé utilisable par la corrélation.
+
 import json
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
-def get_nested(data: Dict[str, Any], path: List[str], default=None):
-    """
-    Safely get a nested value from a dictionary.
-    Example:
-        get_nested(alert, ["rule", "id"])
-    """
+# ─────────────────────────────────────────────────────────────
+# MITRE_FALLBACK
+# Utilisé uniquement si Wazuh n'a pas fourni le mapping MITRE.
+# ─────────────────────────────────────────────────────────────
+MITRE_FALLBACK: Dict[str, Dict[str, str]] = {
+    "ssh_failed":            {"tactic": "Credential Access",    "technique": "T1110", "technique_name": "Brute Force"},
+    "ssh_success":           {"tactic": "Initial Access",       "technique": "T1078", "technique_name": "Valid Accounts"},
+    "login_session_opened":  {"tactic": "Initial Access",       "technique": "T1078", "technique_name": "Valid Accounts"},
+    "login_session_closed":  {"tactic": "Defense Evasion",      "technique": "T1078", "technique_name": "Account Logoff"},
+    "sudo_root_executed":    {"tactic": "Privilege Escalation", "technique": "T1548", "technique_name": "Abuse Elevation Control"},
+    "sudo_activity":         {"tactic": "Privilege Escalation", "technique": "T1548", "technique_name": "Abuse Elevation Control"},
+    "file_added":            {"tactic": "Defense Evasion",      "technique": "T1565", "technique_name": "Data Manipulation"},
+    "file_modified":         {"tactic": "Defense Evasion",      "technique": "T1565", "technique_name": "Data Manipulation"},
+    "process_created":       {"tactic": "Execution",            "technique": "T1059", "technique_name": "Command and Scripting Interpreter"},
+    "network_connection":    {"tactic": "Command and Control",  "technique": "T1071", "technique_name": "Application Layer Protocol"},
+    "other":                 {"tactic": "Unknown",              "technique": "T0000", "technique_name": "Unknown"},
+}
+
+# ─────────────────────────────────────────────────────────────
+# Rule IDs considérés intéressants pour la corrélation
+# ─────────────────────────────────────────────────────────────
+RELEVANT_RULE_IDS = {
+    "5501", "5502", "5715", "5716", "5710",
+    "5402", "5403", "2502", "2503",
+}
+
+# ─────────────────────────────────────────────────────────────
+# Mapping rule_id -> event_type
+# ─────────────────────────────────────────────────────────────
+RULE_ID_TO_EVENT_TYPE: Dict[str, str] = {
+    "5715": "ssh_success",
+    "5716": "ssh_failed",
+    "5710": "ssh_failed",
+    "5501": "login_session_opened",
+    "5502": "login_session_closed",
+    "5402": "sudo_root_executed",
+    "5403": "sudo_activity",
+    "2502": "file_added",
+    "2503": "file_modified",
+}
+
+
+def get_nested(data: Dict[str, Any], path: List[str], default=None) -> Any:
     current = data
     for key in path:
         if isinstance(current, dict) and key in current:
@@ -17,121 +59,131 @@ def get_nested(data: Dict[str, Any], path: List[str], default=None):
     return current
 
 
-def infer_event_type(rule_description: str, full_log: str) -> str:
-    """
-    Infer a simplified event type from Wazuh alert content.
-    """
-    rule_desc = (rule_description or "").lower()
-    log_text = (full_log or "").lower()
-    text = f"{rule_desc} {log_text}"
+def parse_timestamp(raw_ts: Optional[str]) -> Optional[str]:
+    if not raw_ts:
+        return None
 
-    # PAM session events first
-    if "pam: login session opened" in rule_desc or "session opened for user" in log_text:
+    try:
+        ts = str(raw_ts).replace("Z", "+00:00").replace("+0000", "+00:00")
+        dt = datetime.fromisoformat(ts)
+        return dt.astimezone(timezone.utc).isoformat()
+    except (ValueError, TypeError):
+        return raw_ts
+
+
+def infer_event_type(rule_id: str, rule_description: str, full_log: str) -> str:
+    if rule_id in RULE_ID_TO_EVENT_TYPE:
+        return RULE_ID_TO_EVENT_TYPE[rule_id]
+
+    desc = (rule_description or "").lower()
+    log = (full_log or "").lower()
+    text = f"{desc} {log}"
+
+    if "pam" in text and "session opened" in text:
         return "login_session_opened"
-
-    if "pam: login session closed" in rule_desc or "session closed for user" in log_text:
+    if "pam" in text and "session closed" in text:
         return "login_session_closed"
-
-    # SSH authentication events
-    if "sshd" in text and ("authentication success" in text or "accepted password" in text):
+    if "sshd" in text and ("accepted password" in text or "accepted publickey" in text):
         return "ssh_success"
-
-    if "sshd" in text and (
-        "authentication failed" in text
-        or "failed password" in text
-        or "invalid user" in text
-    ):
+    if "sshd" in text and ("failed password" in text or "invalid user" in text):
         return "ssh_failed"
-
-    # Sudo events
-    if "successful sudo to root executed" in rule_desc:
+    if "sudo" in text and "root" in text and "command" in text:
         return "sudo_root_executed"
-
     if "sudo" in text:
         return "sudo_activity"
-
-    # Generic fallback
+    if "file added" in text or "new file" in text:
+        return "file_added"
+    if "file modified" in text or "modified" in text:
+        return "file_modified"
+    if "process created" in text or "new process" in text:
+        return "process_created"
+    if "connection" in text or "network" in text:
+        return "network_connection"
     return "other"
 
 
-def is_relevant_alert(processed_alert: Dict[str, Any]) -> bool:
-    """
-    Keep only alerts useful for correlation in this project.
-    You can relax this later if needed.
-    """
-    useful_event_types = {
-        "login_session_opened",
-        "login_session_closed",
-        "ssh_success",
-        "ssh_failed",
-        "sudo_root_executed",
-        "sudo_activity",
-    }
+def extract_src_ip(raw_alert: Dict[str, Any]) -> Optional[str]:
+    candidates = [
+        get_nested(raw_alert, ["data", "srcip"]),
+        get_nested(raw_alert, ["data", "src_ip"]),
+        get_nested(raw_alert, ["srcip"]),
+    ]
+    for ip in candidates:
+        if ip and str(ip) not in ("127.0.0.1", "::1", "unknown", ""):
+            return str(ip)
+    return None
 
-    useful_rule_ids = {
-        "5501",  # PAM: Login session opened
-        "5502",  # PAM: Login session closed
-        "5715",  # sshd: authentication success
-        "5716",  # sshd: authentication failed (may vary depending on ruleset)
-        "5402",  # Successful sudo to ROOT executed
-    }
 
-    event_type = processed_alert.get("event_type")
-    rule_id = processed_alert.get("rule_id")
-
-    return event_type in useful_event_types or rule_id in useful_rule_ids
+def extract_dst_user(raw_alert: Dict[str, Any]) -> Optional[str]:
+    candidates = [
+        get_nested(raw_alert, ["data", "dstuser"]),
+        get_nested(raw_alert, ["data", "dstUser"]),
+        get_nested(raw_alert, ["dstuser"]),
+    ]
+    for user in candidates:
+        if user and str(user) not in ("unknown", ""):
+            return str(user)
+    return None
 
 
 def preprocess_alert(raw_alert: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Convert a raw Wazuh alert into a simplified normalized alert.
-    """
-    timestamp = raw_alert.get("timestamp")
+    rule_id = str(get_nested(raw_alert, ["rule", "id"], "0"))
+    rule_level = int(get_nested(raw_alert, ["rule", "level"], 0))
+    rule_description = get_nested(raw_alert, ["rule", "description"], "") or ""
+    full_log = raw_alert.get("full_log", "") or ""
 
-    rule_id = str(get_nested(raw_alert, ["rule", "id"], "unknown"))
-    rule_level = get_nested(raw_alert, ["rule", "level"], 0)
-    rule_description = get_nested(raw_alert, ["rule", "description"], "unknown")
+    event_type = infer_event_type(rule_id, rule_description, full_log)
 
-    agent_name = get_nested(raw_alert, ["agent", "name"], "unknown")
-    agent_ip = get_nested(raw_alert, ["agent", "ip"], "unknown")
+    mitre_raw = get_nested(raw_alert, ["rule", "mitre"], {}) or {}
+    mitre_ids = mitre_raw.get("id", [])
+    mitre_tacts = mitre_raw.get("tactic", [])
+    mitre_techs = mitre_raw.get("technique", [])
 
-    src_ip = get_nested(raw_alert, ["data", "srcip"])
-    if src_ip is None:
-        src_ip = get_nested(raw_alert, ["srcip"], None)
+    if mitre_tacts:
+        mitre_tactic = mitre_tacts[0] if isinstance(mitre_tacts, list) else mitre_tacts
+        mitre_technique = (
+            mitre_ids[0] if isinstance(mitre_ids, list) and mitre_ids else mitre_ids
+        ) or MITRE_FALLBACK.get(event_type, MITRE_FALLBACK["other"])["technique"]
+        mitre_technique_name = (
+            mitre_techs[0] if isinstance(mitre_techs, list) and mitre_techs else mitre_techs
+        ) or MITRE_FALLBACK.get(event_type, MITRE_FALLBACK["other"])["technique_name"]
+    else:
+        fb = MITRE_FALLBACK.get(event_type, MITRE_FALLBACK["other"])
+        mitre_tactic = fb["tactic"]
+        mitre_technique = fb["technique"]
+        mitre_technique_name = fb["technique_name"]
 
-    dst_user = get_nested(raw_alert, ["data", "dstuser"])
-    if dst_user is None:
-        dst_user = get_nested(raw_alert, ["dstuser"], None)
-
-    full_log = raw_alert.get("full_log", "")
-
-    mitre_id = get_nested(raw_alert, ["rule", "mitre", "id"], [])
-    mitre_tactic = get_nested(raw_alert, ["rule", "mitre", "tactic"], [])
-    mitre_technique = get_nested(raw_alert, ["rule", "mitre", "technique"], [])
-
-    event_type = infer_event_type(rule_description, full_log)
-
-    processed_alert = {
-        "timestamp": timestamp,
+    return {
+        "timestamp": parse_timestamp(raw_alert.get("timestamp")),
         "rule_id": rule_id,
         "rule_level": rule_level,
         "rule_description": rule_description,
-        "agent_name": agent_name,
-        "agent_ip": agent_ip,
-        "src_ip": src_ip,
-        "dst_user": dst_user,
         "event_type": event_type,
+        "agent_name": get_nested(raw_alert, ["agent", "name"], "unknown"),
+        "agent_ip": get_nested(raw_alert, ["agent", "ip"], "unknown"),
+        "src_ip": extract_src_ip(raw_alert),
+        "dst_user": extract_dst_user(raw_alert),
         "full_log": full_log,
-        "mitre_id": mitre_id,
         "mitre_tactic": mitre_tactic,
         "mitre_technique": mitre_technique,
+        "mitre_technique_name": mitre_technique_name,
     }
 
-    return processed_alert
+
+def is_relevant_alert(alert: Dict[str, Any]) -> bool:
+    useful_event_types = {
+        "ssh_failed", "ssh_success",
+        "login_session_opened", "login_session_closed",
+        "sudo_root_executed", "sudo_activity",
+        "file_added", "file_modified",
+        "process_created", "network_connection",
+    }
+    return (
+        alert.get("event_type") in useful_event_types
+        or alert.get("rule_id") in RELEVANT_RULE_IDS
+        or int(alert.get("rule_level", 0)) >= 7
+    )
 
 
 def format_pretty(alert: Dict[str, Any]) -> str:
-    """
-    Pretty-print a preprocessed alert.
-    """
     return json.dumps(alert, indent=2, ensure_ascii=False)

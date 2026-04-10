@@ -8,3 +8,4 @@ venv/
 alerts.json
 *.jsonl
 .DS_Store
+*.save*

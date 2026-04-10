@@ -1,0 +1,39 @@
+[
+  {
+    "incident_id": "EA3C7E98",
+    "attack_type": "Brute Force SSH",
+    "severity": "CRITICAL",
+    "summary": {
+      "attacker_ip": "192.168.93.163",
+      "target_agent": "victime-VMware-Virtual-Platform",
+      "target_user": null,
+      "time_start": "2026-04-01 14:21:26 UTC",
+      "time_end": "2026-04-01 14:21:32 UTC",
+      "duration_seconds": 6,
+      "alert_count": 11
+    },
+    "mitre": {
+      "tactics_chain": [
+        "Credential Access"
+      ],
+      "techniques": [
+        "T1110.001",
+        "T1110"
+      ]
+    },
+    "threat_context": {
+      "ip_reputation": "internal"
+    },
+    "ai_analysis": {
+      "summary": "A CRITICAL incident of Brute Force SSH attack has been detected originating from IP address 192.168.93.163 targeting the machine 'victime-VMware-Virtual-Platform'. The attack has triggered 11 alerts and is associated with MITRE techniques T1110.001 and T1110.",
+      "explanation": "The Brute Force SSH attack involves repeated attempts to gain unauthorized access to the target machine by guessing valid combinations of usernames and passwords. In this case, no specific targeted user is identified but multiple alerts have been raised, indicating a high frequency of failed login attempts.",
+      "risk_level": "CRITICAL",
+      "recommendations": [
+        "Immediately block the source IP address 192.168.93.163 at the network level to prevent further attacks.",
+        "Enable and configure SSH key-based authentication for secure login, disabling password-based login if possible.",
+        "Implement rate limiting or lockout policies to restrict the number of failed login attempts within a given time period.",
+        "Investigate the logs for any successful login attempts or signs of compromise. If found, take appropriate remediation actions."
+      ]
+    }
+  }
+]
