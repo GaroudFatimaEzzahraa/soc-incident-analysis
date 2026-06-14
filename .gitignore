@@ -1,11 +1,47 @@
+# Python cache
 __pycache__/
-*.pyc
-*.log
-.env
+*.py[cod]
+*$py.class
+
+# Virtual environments
 venv/
-.idea/
+env/
+.venv/
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Machine Learning models
+*.joblib
+*.pkl
+
+# Generated reports
+final_report.json
+incident_output.json
+reconstructed_incidents.json
+
+# Logs
+*.log
+
+# VS Code
 .vscode/
-alerts.json
-*.jsonl
+
+# JetBrains
+.idea/
+
+# OS files
 .DS_Store
-*.save*
+Thumbs.db
+
+# Python build files
+build/
+dist/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.bak
+*.save
+*.swp
