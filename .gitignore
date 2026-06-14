@@ -45,3 +45,10 @@ dist/
 *.bak
 *.save
 *.swp
+
+node_modules/
+frontend/node_modules/
+build/
+frontend/build/
+.env
+*.log

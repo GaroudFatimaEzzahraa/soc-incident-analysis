@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  background-color: #0f172a;
+  font-family: Arial;
+}
+
+.blink {
+  animation: blink 1s infinite;
+  color: red;
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
