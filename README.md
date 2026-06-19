@@ -152,18 +152,16 @@ The platform integrates:
 ```text
 soc-incident-analysis/
 │
-├── backend/
-│   ├── api.py
-│   ├── correlation_engine.py
-│   ├── db.py
-│   ├── incident_reconstructor.py
-│   ├── llm_analyzer_realtime.py
-│   ├── ml_analyzer.py
-│   ├── preprocessing.py
-│   ├── producer.py
-│   ├── test_preprocessing.py
-│   ├── wazuh_to_kafka.py
-│   └── README.md
+├── api.py
+├── correlation_engine.py
+├── db.py
+├── incident_reconstructor.py
+├── llm_analyzer_realtime.py
+├── ml_analyzer.py
+├── preprocessing.py
+├── producer.py
+├── test_preprocessing.py
+├── wazuh_to_kafka.py
 │
 ├── frontend/
 │   ├── src/
